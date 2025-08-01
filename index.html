@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Word Lightning</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>⚡ WORD LIGHTNING ⚡</h1>
+            <div class="stats">
+                <span class="score">Score: <span id="score">0</span></span>
+                <span class="streak">Streak: <span id="streak">0</span></span>
+            </div>
+        </header>
+
+        <div class="game-area">
+            <div class="word-display" id="wordDisplay">
+                Click START to begin!
+            </div>
+            
+            <div class="timer-container">
+                <div class="timer-bar" id="timerBar"></div>
+                <div class="timer-text" id="timerText">Ready?</div>
+            </div>
+            
+            <input 
+                type="text" 
+                id="wordInput" 
+                placeholder="Type the word here..." 
+                disabled
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+            >
+            
+            <button id="startBtn" class="start-btn">🚀 START GAME</button>
+            <button id="shareBtn" class="share-btn" style="display:none;">📤 SHARE SCORE</button>
+        </div>
+
+        <div class="leaderboard" id="leaderboard">
+            <h3>🏆 Your Best Scores</h3>
+            <div id="scoresList">No scores yet!</div>
+        </div>
+
+        <div class="roast-zone" id="roastZone"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

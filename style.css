@@ -1,0 +1,214 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: white;
+    overflow-x: hidden;
+}
+
+.game-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.game-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+}
+
+.stats span {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.word-display {
+    background: rgba(255,255,255,0.95);
+    color: #333;
+    padding: 30px 20px;
+    border-radius: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.word-display.correct {
+    background: #4CAF50;
+    color: white;
+    transform: scale(1.1);
+}
+
+.word-display.wrong {
+    background: #f44336;
+    color: white;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.timer-container {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.timer-bar::after {
+    content: '';
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #FFC107, #f44336);
+    width: 100%;
+    display: block;
+    transform: translateX(0%);
+    transition: transform linear;
+}
+
+.timer-bar.running::after {
+    transform: translateX(-100%);
+}
+
+.timer-text {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#wordInput {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#wordInput:focus {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
+}
+
+.start-btn, .share-btn {
+    width: 100%;
+    padding: 20px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+    color: white;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.start-btn:hover, .share-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.leaderboard {
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 30px;
+    backdrop-filter: blur(10px);
+}
+
+.leaderboard h3 {
+    margin-bottom: 15px;
+    color: #FFD700;
+}
+
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: rgba(255,255,255,0.1);
+    margin-bottom: 5px;
+    border-radius: 10px;
+}
+
+.roast-zone {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255,107,107,0.2);
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed rgba(255,107,107,0.5);
+}
+
+.panic-mode {
+    animation: panic 0.1s infinite;
+}
+
+@keyframes panic {
+    0%, 100% { background-color: rgba(255,255,255,0.95); }
+    50% { background-color: rgba(255,107,107,0.3); }
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+    .game-header h1 {
+        font-size: 2rem;
+    }
+    
+    .word-display {
+        font-size: 1.5rem;
+        padding: 20px 15px;
+    }
+    
+    #wordInput {
+        font-size: 1.2rem;
+        padding: 15px;
+    }
+}

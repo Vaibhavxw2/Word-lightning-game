@@ -1,48 +1,41 @@
 class WordLightning {
     constructor() {
         this.words = [
-            // Easy (1-4 letters)
             'cat', 'dog', 'run', 'jump', 'love', 'code', 'game', 'fun',
-            
-            // Medium (5-8 letters)
             'awesome', 'lightning', 'keyboard', 'telegram', 'developer', 'amazing', 'challenge', 'victory',
-            
-            // Hard (9+ letters)
-            'javascript', 'programming', 'supercalifragilisticexpialidocious', 'extraordinary', 'unbelievable', 'magnificent', 'tremendous'
+            'javascript', 'programming', 'supercalifragilisticexpialidocious', 'extraordinary', 'unbelievable'
         ];
         
         this.roasts = [
             "My grandmother types faster! 👵",
-            "Are you typing with your elbows? 🤔",
+            "Are you typing with your elbows? 🤔", 
             "Even Internet Explorer is faster! 🐌",
-            "Did you fall asleep? 😴",
-            "Turtles are judging you right now 🐢",
-            "Your keyboard is crying 😢",
-            "Speed of a snail, accuracy of a storm! 🌪️",
-            "I've seen faster glaciers! 🧊"
+            "Turtles are judging you right now 🐢"
         ];
         
         this.encouragements = [
             "LIGHTNING FAST! ⚡",
-            "SPEED DEMON! 👹",
+            "SPEED DEMON! 👹", 
             "KEYBOARD WARRIOR! ⚔️",
-            "UNSTOPPABLE! 🚀",
-            "TYPING LEGEND! 👑",
-            "ABSOLUTELY INSANE! 🔥",
-            "INHUMAN SPEED! 🤖"
+            "UNSTOPPABLE! 🚀"
         ];
         
+        this.resetGame();
+        this.initializeElements();
+        this.loadSounds();
+        this.initializeTelegram();
+    }
+    
+    resetGame() {
         this.score = 0;
         this.streak = 0;
         this.currentWord = '';
         this.startTime = 0;
         this.gameActive = false;
-        this.timeLimit = 5000; // 5 seconds initially
+        this.timeLimit = 3000;
         this.timer = null;
-        
-        this.initializeElements();
-        this.loadScores();
-        this.initializeTelegram();
+        this.wordsTyped = 0;
+        this.level = 1;
     }
     
     initializeElements() {
@@ -51,87 +44,119 @@ class WordLightning {
         this.scoreElement = document.getElementById('score');
         this.streakElement = document.getElementById('streak');
         this.startBtn = document.getElementById('startBtn');
-        this.shareBtn = document.getElementById('shareBtn');
         this.timerBar = document.getElementById('timerBar');
         this.timerText = document.getElementById('timerText');
         this.roastZone = document.getElementById('roastZone');
-        this.scoresList = document.getElementById('scoresList');
         
         this.startBtn.addEventListener('click', () => this.startGame());
-        this.shareBtn.addEventListener('click', () => this.shareScore());
         this.wordInput.addEventListener('input', (e) => this.checkInput(e.target.value));
-        this.wordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.checkInput(e.target.value);
-        });
+        
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('gesturechange', e => e.preventDefault());
+        document.addEventListener('gestureend', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+        this.wordInput.addEventListener('paste', e => e.preventDefault());
+    }
+    
+    loadSounds() {
+        this.correctSound = new Audio();
+        this.correctSound.src = 'data:audio/wav;base64,UklGRhwCAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YfgBAAC4uLi4uLi4';
+        this.wrongSound = new Audio();
+        this.wrongSound.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAA';
     }
     
     initializeTelegram() {
-        // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
             tg.ready();
             tg.expand();
-            
-            // Set theme
-            document.body.style.background = tg.themeParams.bg_color || document.body.style.background;
+            tg.disableVerticalSwipes();
         }
     }
     
     startGame() {
+        this.resetGame();
         this.gameActive = true;
-        this.score = 0;
-        this.streak = 0;
-        this.timeLimit = 5000;
         
-        this.startBtn.style.display = 'none';
-        this.shareBtn.style.display = 'none';
-        this.wordInput.disabled = false;
-        this.wordInput.focus();
+        this.vibrate([100, 50, 100]);
+        this.startBtn.classList.add('pressed');
         
-        this.updateDisplay();
-        this.nextWord();
+        setTimeout(() => {
+            this.startBtn.style.display = 'none';
+            this.wordInput.disabled = false;
+            this.wordInput.focus();
+            this.nextWord();
+        }, 200);
+        
         this.roastZone.textContent = "Let's see what you got! 💪";
     }
     
     nextWord() {
         if (!this.gameActive) return;
         
-        // Progressive difficulty
-        let wordPool;
-        if (this.streak < 5) {
-            wordPool = this.words.slice(0, 8); // Easy words
-        } else if (this.streak < 15) {
-            wordPool = this.words.slice(4, 16); // Medium words
-        } else {
-            wordPool = this.words.slice(8); // Hard words
-        }
+        this.calculateDifficulty();
         
-        this.currentWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+        this.currentWord = this.getWordForLevel();
         this.wordDisplay.textContent = this.currentWord;
         this.wordDisplay.className = 'word-display';
         this.wordInput.value = '';
         
         this.startTime = Date.now();
         this.startTimer();
+    }
+    
+    calculateDifficulty() {
+        if (this.wordsTyped < 3) {
+            this.timeLimit = 3000;
+            this.level = 1;
+        } else if (this.wordsTyped < 7) {
+            this.timeLimit = 3000;
+            this.level = 2;
+        } else if (this.wordsTyped < 12) {
+            this.timeLimit = 4000;
+            this.level = 3;
+        } else {
+            this.timeLimit = Math.max(2000, 4000 - Math.floor((this.wordsTyped - 12) / 3) * 200);
+            this.level = Math.floor(this.wordsTyped / 5) + 1;
+        }
+    }
+    
+    getWordForLevel() {
+        let wordPool;
+        if (this.level === 1) {
+            wordPool = this.words.slice(0, 8);
+        } else if (this.level === 2) {
+            wordPool = this.words.slice(4, 16);
+        } else {
+            wordPool = this.words.slice(8);
+        }
         
-        // Reduce time limit as streak increases (minimum 2 seconds)
-        this.timeLimit = Math.max(2000, 5000 - (this.streak * 100));
-        this.timerText.textContent = `${(this.timeLimit / 1000).toFixed(1)}s`;
+        return wordPool[Math.floor(Math.random() * wordPool.length)];
     }
     
     startTimer() {
         this.timerBar.className = 'timer-bar running';
         this.timerBar.style.transition = `transform ${this.timeLimit}ms linear`;
+        this.timerText.textContent = `${(this.timeLimit / 1000).toFixed(1)}s`;
         
-        // Panic mode at 1 second left
-        const panicTimeout = setTimeout(() => {
-            this.wordDisplay.classList.add('panic-mode');
-            this.vibrate();
-        }, this.timeLimit - 1000);
+        this.updateTimer();
         
         this.timer = setTimeout(() => {
             this.timeUp();
         }, this.timeLimit);
+    }
+    
+    updateTimer() {
+        if (!this.gameActive) return;
+        
+        const elapsed = Date.now() - this.startTime;
+        const remaining = Math.max(0, this.timeLimit - elapsed);
+        
+        this.timerText.textContent = `${(remaining / 1000).toFixed(1)}s`;
+        
+        if (remaining > 0) {
+            requestAnimationFrame(() => this.updateTimer());
+        }
     }
     
     checkInput(input) {
@@ -144,7 +169,8 @@ class WordLightning {
     
     correctAnswer() {
         clearTimeout(this.timer);
-        this.wordDisplay.classList.remove('panic-mode');
+        this.playSound('correct');
+        this.vibrate(50);
         
         const timeTaken = Date.now() - this.startTime;
         const timeBonus = Math.max(100 - Math.floor(timeTaken / 50), 10);
@@ -154,12 +180,10 @@ class WordLightning {
         const points = timeBonus + lengthBonus + streakBonus;
         this.score += points;
         this.streak++;
+        this.wordsTyped++;
         
-        // Visual feedback
         this.wordDisplay.className = 'word-display correct';
-        this.vibrate(50);
         
-        // Encouragement
         if (timeTaken < 2000) {
             this.showEncouragement();
         }
@@ -172,57 +196,53 @@ class WordLightning {
     }
     
     timeUp() {
-        this.wrongAnswer("Time's up! ⏰");
+        this.gameOver("⏰ Time's up!");
     }
     
-    wrongAnswer(message = '') {
-        this.wordDisplay.classList.remove('panic-mode');
-        this.wordDisplay.className = 'word-display wrong';
+    gameOver(reason) {
+        this.gameActive = false;
+        this.playSound('wrong');
         this.vibrate([100, 50, 100]);
         
-        // Show roast
-        this.showRoast(message);
-        
-        // Reset streak
-        this.streak = 0;
-        this.updateDisplay();
-        
-        // Game over after 3 wrong answers or continue
-        setTimeout(() => {
-            if (this.score < 500) { // Easy game over condition
-                this.gameOver();
-            } else {
-                this.nextWord();
-            }
-        }, 1500);
-    }
-    
-    gameOver() {
-        this.gameActive = false;
         this.wordInput.disabled = true;
         this.timerBar.className = 'timer-bar';
         
-        this.wordDisplay.textContent = `Game Over! Final Score: ${this.score}`;
-        this.wordDisplay.className = 'word-display';
+        this.wordDisplay.textContent = `Game Over! Score: ${this.score}`;
+        this.wordDisplay.className = 'word-display wrong';
         
         this.startBtn.textContent = '🔄 PLAY AGAIN';
         this.startBtn.style.display = 'block';
-        this.shareBtn.style.display = 'block';
+        this.startBtn.classList.remove('pressed');
         
+        this.showRoast(reason);
         this.saveScore();
-        this.displayScores();
+    }
+    
+    playSound(type) {
+        try {
+            if (type === 'correct') {
+                this.correctSound.currentTime = 0;
+                this.correctSound.play();
+            } else {
+                this.wrongSound.currentTime = 0;
+                this.wrongSound.play();
+            }
+        } catch (e) {}
+    }
+    
+    vibrate(pattern = 100) {
+        if (navigator.vibrate) {
+            navigator.vibrate(pattern);
+        }
         
-        // Final roast or encouragement
-        if (this.score < 200) {
-            this.roastZone.textContent = "Practice makes perfect... hopefully! 😅";
-        } else if (this.score > 1000) {
-            this.roastZone.textContent = "LEGENDARY PERFORMANCE! 🏆👑";
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
         }
     }
     
-    showRoast(customMessage = '') {
-        const message = customMessage || this.roasts[Math.floor(Math.random() * this.roasts.length)];
-        this.roastZone.textContent = message;
+    showRoast(message = '') {
+        const roast = message || this.roasts[Math.floor(Math.random() * this.roasts.length)];
+        this.roastZone.textContent = roast;
     }
     
     showEncouragement() {
@@ -235,83 +255,24 @@ class WordLightning {
         this.streakElement.textContent = this.streak;
     }
     
-    vibrate(pattern = 100) {
-        if (navigator.vibrate) {
-            navigator.vibrate(pattern);
-        }
-        
-        // Telegram haptic feedback
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }
-    }
-    
     saveScore() {
         const scores = JSON.parse(localStorage.getItem('wordLightningScores') || '[]');
         scores.push({
             score: this.score,
-            date: new Date().toLocaleDateString(),
-            streak: this.streak
+            streak: this.streak,
+            date: new Date().toLocaleDateString()
         });
         scores.sort((a, b) => b.score - a.score);
-        scores.splice(5); // Keep only top 5
+        scores.splice(5);
         localStorage.setItem('wordLightningScores', JSON.stringify(scores));
-    }
-    
-    loadScores() {
-        this.displayScores();
-    }
-    
-    displayScores() {
-        const scores = JSON.parse(localStorage.getItem('wordLightningScores') || '[]');
-        
-        if (scores.length === 0) {
-            this.scoresList.textContent = 'No scores yet!';
-            return;
-        }
-        
-        this.scoresList.innerHTML = scores.map((score, index) => 
-            `<div class="score-item">
-                <span>${index + 1}. ${score.score} pts</span>
-                <span>Streak: ${score.streak}</span>
-            </div>`
-        ).join('');
-    }
-    
-    shareScore() {
-        const message = `🔥 I just scored ${this.score} points in Word Lightning! ⚡\nMax streak: ${this.streak} words\n\nCan you beat me? Try it now! 👇`;
-        
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.showPopup({
-                title: 'Share Your Score!',
-                message: 'Share your amazing score with friends?',
-                buttons: [
-                    {id: 'share', type: 'default', text: 'Share Score'},
-                    {id: 'cancel', type: 'cancel', text: 'Cancel'}
-                ]
-            }, (buttonId) => {
-                if (buttonId === 'share') {
-                    window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(message)}`);
-                }
-            });
-        } else {
-            // Fallback for web
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Word Lightning Score',
-                    text: message,
-                    url: window.location.href
-                });
-            } else {
-                // Copy to clipboard
-                navigator.clipboard.writeText(message + '\n' + window.location.href);
-                alert('Score copied to clipboard!');
-            }
-        }
     }
 }
 
-// Initialize game when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    const viewport = document.querySelector('meta[name=viewport]');
+    if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
+    
     new WordLightning();
 });
